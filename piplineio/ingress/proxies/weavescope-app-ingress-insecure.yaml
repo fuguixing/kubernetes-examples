@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: weavescope-app-insecure-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: weavescope-insecure.kg-af.knowledgegrids.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: weavescope-app
+          servicePort: 80

@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hue-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: hue.kg-af.knowledgegrids.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: hue
+          servicePort: 8888
