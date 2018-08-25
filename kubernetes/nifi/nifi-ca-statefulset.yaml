@@ -1,0 +1,31 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: nifi-ca
+spec:
+  serviceName: nifi-ca
+  replicas: 1
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nifi-ca
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - gke-am-platform-default-pool-6b96e432-3cbt
+      containers:
+        - name: nifi-ca
+          image: us.gcr.io/synapse-157713/nifi:nifi-tool-1.1
+          command: ["/opt/nifi-tls-toolkit/bin/tls-toolkit.sh","server","-t","tokenenenenalkjlkdfjlkjdflkasjflksjaflsajdflksajfklsajfklsajfklajsf","-D","CN=nifi-ca,OU=Docker NiFi"]
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8443

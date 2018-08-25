@@ -1,0 +1,73 @@
+
+version: '3'
+services:
+
+  nifi-ca:
+    image:  aldrin/apache-nifi-tls-toolkit
+    hostname: nifi-ca
+    ports:
+      - "18443:8443"
+    command: "server -t ${tls_token} -D CN=nifi-ca,OU=Docker NiFi"
+
+  nifi-node:
+    build: ./
+    ports:
+      - 8080
+      - 8081
+      - 8082
+      - 28443:8443
+    environment:
+      tls_token: ${tls_token}
+      # Makes use of NiFi TLS Toolkit to autoprovision certiciates
+      GENERATE_CERTIFICATES: 'true'
+
+      # Configure NiFi to run in HTTPS mode
+      NIFI_KEYSTORE: '/opt/nifi/certs/keystore.jks'
+      NIFI_KEYSTORE_TYPE: 'JKS'
+      NIFI_KEYSTORE_PASSWORD: ''
+      NIFI_TRUSTSTORE: '/opt/nifi/certs/truststore.jks'
+      NIFI_TRUSTSTORE_TYPE: 'JKS'
+      NIFI_TRUSTSTORE_PASSWORD: ''
+
+      # http://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#ldap_login_identity_provider
+      # One of ANONYMOUS, SIMPLE, LDAPS, START_TLS
+      LDAP_AUTHENTICATION_STRATEGY: 'SIMPLE'
+      LDAP_MANAGER_DN: 'cn=admin,dc=example,dc=org'
+      LDAP_MANAGER_PASSWORD: 'password'
+
+      LDAP_USER_SEARCH_BASE: 'dc=example,dc=org'
+      LDAP_USER_SEARCH_FILTER: 'cn={0}'
+      LDAP_IDENTITY_STRATEGY: 'USE_DN'
+
+      LDAP_URL: 'ldap://ldap:389'
+
+      # Optional properties only needed for secure START_TLS or LDAPS
+      LDAP_TLS_KEYSTORE: ''
+      LDAP_TLS_KEYSTORE_PASSWORD: ''
+      LDAP_TLS_KEYSTORE_TYPE: ''
+      LDAP_TLS_TRUSTSTORE: ''
+      LDAP_TLS_TRUSTSTORE_PASSWORD: ''
+      LDAP_TLS_TRUSTSTORE_TYPE: ''
+    links:
+      - nifi-ca:nifi-ca
+
+  ldap:
+    image: osixia/openldap:1.1.9
+    hostname: ldap
+    volumes:
+      - /container/service/slapd/assets/certs
+    ports:
+      - 6389:389
+      - 6636:636
+    environment:
+      # Default admin - cn=admin,dc=example,dc=org
+      LDAP_ADMIN_PASSWORD: 'password'
+      # LDAP_TLS_ENFORCE: 'true'
+      # LDAP_TLS_VERIFY_CLIENT: 'never'
+      # LDAP_TLS_PROTOCOL_MIN: '1.2'
+      # LDAP_TLS_CIPHER_SUITE: 'SECURE128:-VERS-SSL3.0:+VERS-TLS1.2'
+      # LDAP_ORGANISATION: Apache NiFi
+      # LDAP_DOMAIN: ldap.nifi.apache.org
+      # LDAP_TLS_CRT_FILENAME: my-ldap.crt
+      # LDAP_TLS_KEY_FILENAME: my-ldap.key
+      # LDAP_TLS_CA_CRT_FILENAME: the-ca.crt

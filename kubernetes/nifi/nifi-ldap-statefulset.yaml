@@ -1,0 +1,48 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: ldap
+spec:
+  serviceName: ldap
+  replicas: 1
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ldap
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - gke-am-platform-default-pool-6b96e432-3cbt
+      containers:
+        - name: ldap
+          image: osixia/openldap:1.1.9
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 389
+            - containerPort: 636
+          volumeMounts:
+            - name: certsrepository
+              mountPath: /container/service/slapd/assets/certs
+          env:
+            - name: LDAP_ADMIN_PASSWORD
+              value: "password"
+
+
+  volumeClaimTemplates:
+  - metadata:
+      name: certsrepository
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: standard

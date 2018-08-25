@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: nifi
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nifi
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - gke-am-platform-default-pool-6b96e432-3cbt
+      containers:
+      - name: nifi
+        image: us.gcr.io/synapse-157713/nifi:nifi-dep-1.4.20
+
+        ports:
+          - containerPort: 8080
+          - containerPort: 8081
+          - containerPort: 8443
+          - containerPort: 2882
+
+
+
+        env:
+          - name: ZK_NODES_LIST
+            value: "zk-0.zk-hs.nifi.svc.cluster.local,zk-1.zk-hs.nifi.svc.cluster.local,zk-2.zk-hs.nifi.svc.cluster.local"
+          - name: ZK_MONITOR_PORT
+            value: "2888"
+          - name: IS_CLUSTER_NODE
+            value: "yes"
+          - name: BANNER_TEXT
+            value: "Nifi Cluster"

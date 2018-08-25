@@ -1,0 +1,48 @@
+version: '2'
+services:
+
+  nifi-seed:
+    container_name: nifi-cluster-seed
+    build: nifi-node
+    image: nifi-node:1.0.0
+    ports:
+      - "8080-8082:8080-8082"
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+
+  nifi-nodes:
+    image: nifi-node:1.0.0
+    depends_on:
+      - nifi-seed
+
+  zoo1:
+    image: elevy/zookeeper:latest
+    environment:
+      MYID: 1
+      SERVERS: zoo1,zoo2,zoo3
+    ports:
+      - "2181:2181"
+      - "2888"
+      - "3888"
+
+  zoo2:
+    image: elevy/zookeeper:latest
+    environment:
+      MYID: 2
+      SERVERS: zoo1,zoo2,zoo3
+    ports:
+      - "2182:2181"
+      - "2888"
+      - "3888"
+
+  zoo3:
+    image: elevy/zookeeper:latest
+    environment:
+      MYID: 3
+      SERVERS: zoo1,zoo2,zoo3
+    ports:
+      - "2183:2181"
+      - "2888"
+      - "3888"

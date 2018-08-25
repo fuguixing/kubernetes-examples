@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nifi-ca
+spec:
+  clusterIP: None
+  selector:
+    app: nifi-ca
+  ports:
+    - protocol: TCP
+      port: 8443
+      targetPort: 8443

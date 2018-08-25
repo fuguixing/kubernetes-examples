@@ -1,0 +1,45 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: rabbitmq-http
+spec:
+  type: LoadBalancer
+  selector:
+    app: rabbitmq
+  ports:
+    - protocol: TCP
+      port: 15672
+      targetPort: 15672
+      name: rabbitmq
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: rabbitmq
+spec:
+  clusterIP: None
+  selector:
+    app: rabbitmq
+  ports:
+    - protocol: TCP
+      port: 4369
+      targetPort: 4369
+      name: rabbitmq-listen-http
+    - protocol: TCP
+      port: 5671
+      targetPort: 5671
+      name: rabbitmq-site-protocol
+    - protocol: TCP
+      port: 5672
+      targetPort: 5672
+      name: rabbitmq-node1-protocol
+    - protocol: TCP
+      port: 15671
+      targetPort: 15671
+      name: rabbitmq-node2-protocol
+    - protocol: TCP
+      port: 25672
+      targetPort: 25672
+      name: rabbitmq-node3-protocol

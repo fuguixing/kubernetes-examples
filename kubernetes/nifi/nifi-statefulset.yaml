@@ -1,0 +1,139 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: nifi
+spec:
+  serviceName: nifi
+  replicas: 1
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nifi
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values:
+                - gke-am-platform-default-pool-6b96e432-3cbt
+      containers:
+        - name: nifi
+          image: us.gcr.io/synapse-157713/nifi:nifi-1.3.63
+          command: ["/bin/sh","/opt/nifi/run.sh"]
+          #command: ["/bin/sh","-c"]
+          #args: ["chmod +x /opt/nifi/run.sh; cd /opt/nifi && ./run.sh"]
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+            - containerPort: 8081
+            - containerPort: 8443
+            - containerPort: 2882
+          volumeMounts:
+            - name: runconfig
+              mountPath: /opt/nifi/run.sh
+              subPath: run.sh
+            - name: flowfilerepository
+              mountPath: /opt/nifi/flowfile_repository
+            - name: databaserepository
+              mountPath: /opt/nifi/database_repository
+            - name: contentrepository
+              mountPath: /opt/nifi/content_repository
+            - name: provenancerepository
+              mountPath: /opt/nifi/provenance_repository
+          env:
+            - name: ZK_NODES_LIST
+              value: "zk-0.zk-hs.nifi.svc.cluster.local,zk-1.zk-hs.nifi.svc.cluster.local,zk-2.zk-hs.nifi.svc.cluster.local"
+            - name: ZK_MONITOR_PORT
+              value: "2888"
+            - name: IS_CLUSTER_NODE
+              value: "yes"
+            - name: BANNER_TEXT
+              value: "Nifi Cluster"
+            - name: NIFI_KEYSTORE
+              value: "/opt/nifi/certs/keystore.jks"
+            - name: NIFI_KEYSTORE_TYPE
+              value: "JKS"
+            - name: NIFI_KEYSTORE_PASSWORD
+              value: ""
+            - name: NIFI_TRUSTSTORE
+              value: "/opt/nifi/certs/truststore.jks"
+            - name: NIFI_TRUSTSTORE_TYPE
+              value: "JKS"
+            - name: NIFI_TRUSTSTORE_PASSWORD
+              value: ""
+            - name: tls_token
+              value: "tokenenenenalkjlkdfjlkjdflkasjflksjaflsajdflksajfklsajfklsajfklajsf"
+            - name: LDAP_AUTHENTICATION_STRATEGY
+              value: "SIMPLE"
+            - name: LDAP_MANAGER_DN
+              value: "cn=admin,dc=example,dc=org"
+            - name: GENERATE_CERTIFICATES
+              value: "true"
+            - name: LDAP_MANAGER_PASSWORD
+              value: "password"
+            - name: LDAP_USER_SEARCH_BASE
+              value: "dc=example,dc=org"
+            - name: LDAP_USER_SEARCH_FILTER
+              value: "cn={0}"
+            - name: LDAP_IDENTITY_STRATEGY
+              value: "USE_DN"
+            - name: LDAP_URL
+              value: "ldap://ldap:389"
+            - name: LDAP_TLS_KEYSTORE
+              value: ""
+            - name: LDAP_TLS_KEYSTORE_PASSWORD
+              value: ""
+            - name: LDAP_TLS_KEYSTORE_TYPE
+              value: ""
+            - name: LDAP_TLS_TRUSTSTORE
+              value: ""
+            - name: LDAP_TLS_TRUSTSTORE_PASSWORD
+              value: ""
+            - name: LDAP_TLS_TRUSTSTORE_TYPE
+              value: ""
+
+
+      volumes:
+      - name: runconfig
+        configMap:
+          name: nifi-bootstrap
+
+  volumeClaimTemplates:
+  - metadata:
+      name: flowfilerepository
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi
+      storageClassName: standard
+  - metadata:
+      name: databaserepository
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi
+      storageClassName: standard
+  - metadata:
+      name: contentrepository
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi
+      storageClassName: standard
+  - metadata:
+      name: provenancerepository
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi
+      storageClassName: standard
