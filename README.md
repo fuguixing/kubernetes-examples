@@ -11,18 +11,18 @@ To start the Zookeeper ensemble and Kafka cluster, assuming you have docker-comp
     Note: If you're using [Docker toolbox](https://www.docker.com/products/docker-toolbox) then this is the IP from `env | grep DOCKER_HOST`
 
 2. design flow in the nifi
-![Alt text](https://gitlab.com/am-platform/iterative-mb-server/blob/master/nifi flow.png)
+
 
 producer of rabbitmq
 
     e.user.created
-    35.238.231.190
+    35.238.231.xx
     q.user.created
 
 consumer of rabbitmq
 
     q.user.created
-    35.238.231.190
+    35.238.231.xx
     guest/guest
 
 consumer of kafka
@@ -31,12 +31,12 @@ consumer of kafka
     test-produce-consume
     
 # nifi web management
-http://35.188.63.78:8080/nifi/
+http://35.188.63.xx:8080/nifi/
 
 # kafka web management
-http://35.202.170.38
+http://35.202.170.xx
 
 # rabbitmq web management
-http://35.238.231.190:15672  
+http://35.238.231.xx:15672
 username: guest
 password: guest
